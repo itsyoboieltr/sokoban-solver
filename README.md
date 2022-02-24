@@ -10,6 +10,8 @@
 ## General information
 This is a bot that was made to solve Sokoban puzzles on the website https://www.sokobanonline.com/. 
 
+<img width="450" src="https://i.imgur.com/G1hK0SL.gif">
+
 ## How to run?
 
 1. Clone this repository

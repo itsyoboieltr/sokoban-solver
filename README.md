@@ -36,10 +36,10 @@ Example:
 python3 main.py https://www.sokobanonline.com/play/web-archive/marti-homs-caussa/choriban/86887_choriban-20
 ```
 
-## Limitations:
+## Limitations
 (to be fixed)
 - it works only when blocks are 64 x 64.
 - it only uses BFS.
 
-## Inspiration:
+## Inspiration
 - Dawid Dieu: AI Sokoban Solver Bot - https://github.com/TheFebrin/AI-sokoban-solver-bot

@@ -13,6 +13,7 @@ from PIL import Image
 import numpy as np
 import BFS
 import time
+import sys
 
 def main():
     # Headless browser setup for webscraping the Sokoban map
@@ -22,8 +23,10 @@ def main():
     options.headless = True
     driver = webdriver.Chrome(service=service, options=options)
 
-    # Get map url
-    sokobanSource = input('\nEnter URL of Sokoban game: ') or 'https://www.sokobanonline.com/play/web-archive/marti-homs-caussa/choriban/86887_choriban-20'
+    # Get map url, which should be the first command line argument. If it does not exist, use default example
+    try: url = sys.argv[1]
+    except IndexError: url = 'https://www.sokobanonline.com/play/web-archive/marti-homs-caussa/choriban/86887_choriban-20'
+    sokobanSource = url
     
     print('\n<Downloading map...>\n')
 

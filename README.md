@@ -35,13 +35,15 @@ This will launch the solver with the default search method (BFS) and the default
 
 Command line arguments:
 
+```
 python3 main.py <search_method> <map_url>
+```
 
-Search methods supported:
+Supported search methods:
 
-- Breadth-first search: bfs
-- Depth-first search: dfs
-- A\* search: a_star
+- Breadth-first search: ***bfs***
+- Depth-first search: ***dfs***
+- A\* search: ***a_star***
 
 Map url:
 

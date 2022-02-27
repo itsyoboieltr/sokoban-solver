@@ -11,9 +11,12 @@ import base64
 from io import BytesIO
 from PIL import Image
 import numpy as np
-import BFS
 import time
 import sys
+from yaspin import yaspin
+import algorithms.bfs as bfs
+import algorithms.dfs as dfs
+import algorithms.a_star as a_star
 
 def main():
     # Headless browser setup for webscraping the Sokoban map
@@ -23,22 +26,27 @@ def main():
     options.headless = True
     driver = webdriver.Chrome(service=service, options=options)
 
-    # Get map url, which should be the first command line argument. If it does not exist, use default example
-    try: url = sys.argv[1]
-    except IndexError: url = 'https://www.sokobanonline.com/play/web-archive/marti-homs-caussa/choriban/86887_choriban-20'
-    sokobanSource = url
+    # Get map url, which should be the second command line argument. If it does not exist, use default example
+    try: sokobanSource = sys.argv[2]
+    except IndexError: sokobanSource = 'https://www.sokobanonline.com/play/web-archive/marti-homs-caussa/choriban/86890_choriban-23'
     
-    print('\n<Downloading map...>\n')
+    print()
+    spinner = yaspin()
+    spinner.text = 'Downloading map'
+    spinner.start()
 
     # Open headless browser
     driver.get(sokobanSource)
+
+    # Get map name
+    mapName = driver.find_element(by=By.CSS_SELECTOR, value='h2.puzzle-title').text
 
     # Wait until JavaScript loads and canvas appears
     canvas = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.TAG_NAME, 'canvas')))
 
     # Inject JavaScript to download the html canvas of the game map
     canvasBase64 = driver.execute_script('return arguments[0].toDataURL("image/png").replace("image/png", "image/octet-stream");', canvas)
-    
+
     # Close headless browser
     driver.quit()
 
@@ -119,18 +127,77 @@ def main():
             if i + block_size < N and j + block_size < M:
                 pixels = map_squares(i, j)
                 row.append(pixels)
-        SOKOBAN_MAP.append(row)
+        if row: SOKOBAN_MAP.append(row)
 
-    # Filter empty arrays
-    SOKOBAN_MAP = [x for x in SOKOBAN_MAP if x != []]
+    spinner.text = 'Map downloaded!'
+    spinner.ok('✔')
+    print()
+    print(f'Map name: {mapName}')
+    print()
+    print('C: chest | G: goal | P: player | #: wall\n')
 
-    # Run with selected algorithm: BFS
-    solution = BFS.run_bfs(SOKOBAN_MAP)
+    for block in SOKOBAN_MAP: print(*block)
+
+    # Set initial game state
+    N, M = len(SOKOBAN_MAP), len(SOKOBAN_MAP[0])
+
+    sokoban_pos = (0, 0)
+    chests = []
+    good_chests = {}
+    goals = []
+
+    # Extract positions from map for the search algorithm
+    for i in range(N):
+        for j in range(M):
+            if SOKOBAN_MAP[i][j] == 'P': sokoban_pos = (i, j)
+            if SOKOBAN_MAP[i][j] == 'C': chests.append((i, j))
+            if SOKOBAN_MAP[i][j] == 'G':
+                good_chests[(i, j)] = False
+                goals.append((i, j))
+            if SOKOBAN_MAP[i][j] == '*':
+                good_chests[(i, j)] = True
+                chests.append((i, j))
+                goals.append((i, j))
+            if SOKOBAN_MAP[i][j] != '#': SOKOBAN_MAP[i][j] = '.'
+
+    supportedAlgorithms = ['bfs', 'dfs', 'a_star']
+    try: searchAlgorithm = sys.argv[1]
+    except IndexError: searchAlgorithm = 'bfs'
+
+    if searchAlgorithm not in supportedAlgorithms:
+        raise Exception('Search algorithm not supported!')
+
+    print()
+    print(f'Search algorithm: {searchAlgorithm}')
+    print()
+    spinner = yaspin()
+    spinner.text = 'Looking for solution'
+    spinner.start()
+
+    # Run with selected algorithm
+    if searchAlgorithm == 'bfs':
+        solution, solutionMap, stateCount = bfs.run(SOKOBAN_MAP, N, M, sokoban_pos, chests, good_chests, goals)
+    elif searchAlgorithm == 'dfs':
+        solution, solutionMap, stateCount = dfs.run(SOKOBAN_MAP, N, M, sokoban_pos, chests, good_chests, goals)
+    elif searchAlgorithm == 'a_star':
+        solution, solutionMap, stateCount = a_star.run(SOKOBAN_MAP, N, M, sokoban_pos, chests, good_chests, goals)
+
+    # If no solution is found, stop execution
+    if not solution:
+        spinner.text = 'No solution found!'
+        spinner.fail('✗')
+        print(f'\nNumber of states: {stateCount}\n')
+        return
 
     # Print solution
-    print(f'Number of steps needed: {len(solution)}\n')
-    print(solution)
+    spinner.text = 'Solution found!'
+    spinner.ok('✔')
+    print(f'\nNumber of steps: {len(solution)}\n')
+    print(f'Number of states: {stateCount}')
     print()
+    for block in solutionMap: print(*block)
+    print()
+    print(solution)
 
     # Map the directions to keyboard keys for testing
     def mapDirectionToKey(direction):
@@ -148,6 +215,11 @@ def main():
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     driver = webdriver.Chrome(service=service, options=options)
 
+    print()
+    spinner = yaspin()
+    spinner.text = 'Testing the solution'
+    spinner.start()
+
     # Test in the browser
     driver.get(sokobanSource)
 
@@ -163,7 +235,10 @@ def main():
         actions.perform()
         time.sleep(0.1)
     
+    spinner.ok('✔')
+    print()
     input('Press Enter to end...')
+    print()
     
     # Close headless browser
     driver.quit()

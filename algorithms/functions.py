@@ -1,5 +1,3 @@
-from collections import deque
-
 dx = [0, 0, 1, -1]
 dy = [1, -1, 0, 0]
 
@@ -62,72 +60,11 @@ def win(good_chests):
         if not c[1]: return False
     return True
 
-def print_map(map, state, N):
+def get_solution_map(map, state, N):
     map2 = [[] for _ in range(N)]
     for i in range(N): map2[i] = map[i].copy()
     s_pos = state[0]
     chests = state[1]
     map2[s_pos[0]][s_pos[1]] = 'P'
     for c in chests: map2[c[0]][c[1]] = 'C'
-    for m in map2: print(*m)
-    print()
-
-def run_bfs(map):
-    sokoban_pos = (0, 0)
-    chests = []
-    good_chests = {}
-    goals = []
-    ALL_STATES = set()
-
-    print('<Beginning state>\n')
-    print('C: chest | G: goal | P: player | #: wall\n')
-    for m in map: print(*m)
-    print('\n<Looking for solution>\n')
-    
-    N, M = len(map), len(map[0])
-
-    # Extract all positions
-    for i in range(N):
-        for j in range(M):
-            if map[i][j] == 'P': sokoban_pos = (i, j)
-            if map[i][j] == 'C': chests.append((i, j))
-            if map[i][j] == 'G':
-                good_chests[(i, j)] = False
-                goals.append((i, j))
-            if map[i][j] == '*':
-                good_chests[(i, j)] = True
-                chests.append((i, j))
-                goals.append((i, j))
-            if map[i][j] != '#': map[i][j] = '.'
-
-    Q = deque()
-    state = (sokoban_pos, chests, good_chests, [])
-    Q.append(state)
-    ALL_STATES.add(hash_state(sokoban_pos[0], sokoban_pos[1], state))
-
-    cnt = 0
-    solution = []
-    while len(Q) > 0:
-        act_state = Q.popleft()
-        cnt += 1
-        if cnt % 10000 == 0: print('States visited: ', cnt)
-
-        if win(act_state[2]):
-            print('\n<SOLUTION FOUND!>\n')
-            print_map(map, act_state, N)
-            solution = [direction(i) for i in act_state[3]]
-            break
-        
-        s_pos = act_state[0]
-        for i in range(4):
-            new_x = s_pos[0] + dx[i]
-            new_y = s_pos[1] + dy[i]
-            chests, good_chests = act_state[1].copy(), act_state[2].copy()
-            moves = act_state[3].copy()
-            if good_move(new_x, new_y, act_state, direction(i), N, M, map, ALL_STATES):
-                if is_there_a_chest(new_x, new_y, act_state[1]):
-                    move_chest(new_x, new_y, i, chests, good_chests, goals)
-                moves.append(i)
-                new_state = ((new_x, new_y), chests, good_chests, moves)
-                Q.append(new_state)
-    return solution
+    return map2

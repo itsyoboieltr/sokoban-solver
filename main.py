@@ -253,7 +253,7 @@ def main():
     input('Press Enter to end...')
     print()
     
-    # Close headless browser
+    # Close browser
     driver.quit()
 
 if __name__ == '__main__':

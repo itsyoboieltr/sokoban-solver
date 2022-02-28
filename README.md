@@ -31,15 +31,15 @@ pip3 install selenium chromedriver_autoinstaller pillow numpy yaspin
 python3 main.py
 ```
 
-This will launch the solver with the default search method (BFS) and the default example (Choriban #20).
+This will launch the solver with the default search algorithm (BFS) and the default map (Choriban #23).
 
 Command line arguments:
 
 ```
-python3 main.py <search_method> <map_url>
+python3 main.py <search_algorithm> <map_url>
 ```
 
-Supported search methods:
+Supported search algorithms:
 
 - Breadth-first search: ***bfs***
 - Depth-first search: ***dfs***

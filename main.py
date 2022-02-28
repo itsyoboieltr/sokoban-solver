@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import chromedriver_autoinstaller
+import geckodriver_autoinstaller
 import re
 import base64
 from io import BytesIO
@@ -17,15 +18,23 @@ from yaspin import yaspin
 import algorithms.bfs as bfs
 import algorithms.dfs as dfs
 import algorithms.a_star as a_star
+import platform
 
 def main():
     # Headless browser setup for webscraping the Sokoban map
-    driverPath = chromedriver_autoinstaller.install()
-    service = Service(driverPath)
-    options = webdriver.ChromeOptions()
-    options.headless = True
-    driver = webdriver.Chrome(service=service, options=options)
-
+    if platform.system() == 'Linux':
+        driverPath = geckodriver_autoinstaller.install()
+        service = Service(driverPath)
+        options = webdriver.FirefoxOptions()
+        options.headless = True
+        driver = webdriver.Firefox(service=service, options=options)
+    else:
+        driverPath = chromedriver_autoinstaller.install()
+        service = Service(driverPath)
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        driver = webdriver.Chrome(service=service, options=options)
+    
     # Get map url, which should be the second command line argument. If it does not exist, use default example
     try: sokobanSource = sys.argv[2]
     except IndexError: sokobanSource = 'https://www.sokobanonline.com/play/web-archive/marti-homs-caussa/choriban/86890_choriban-23'
@@ -210,10 +219,14 @@ def main():
     solutionKeys = list(map(mapDirectionToKey, solution))
 
     # Browser setup for testing the solution
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option("useAutomationExtension", False)
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    driver = webdriver.Chrome(service=service, options=options)
+    if platform.system() == 'Linux':
+        options = webdriver.FirefoxOptions()
+        driver = webdriver.Firefox(service=service, options=options)
+    else:
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("useAutomationExtension", False)
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        driver = webdriver.Chrome(service=service, options=options)
 
     print()
     spinner = yaspin()

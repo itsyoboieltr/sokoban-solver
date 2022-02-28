@@ -22,7 +22,7 @@ This is a bot that was made to solve Sokoban puzzles on the website https://www.
 2. Install dependencies (the code was written and tested on Python 3.10.0):
 
 ```
-pip3 install selenium chromedriver_autoinstaller pillow numpy yaspin
+pip3 install selenium pillow numpy yaspin chromedriver_autoinstaller geckodriver-autoinstaller
 ```
 
 3. Open a terminal window in the root folder of the repository and enter the following:
